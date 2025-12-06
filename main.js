@@ -129,40 +129,56 @@ const bird = {
     velocity: 0,
     rotation: 0,
 
+    // Animation properties
+    frame: 0,
+    flapSpeed: 10, // Frames per flap change
+    spriteUp: new Image(),
+    spriteDown: new Image(),
+    spriteDead: new Image(),
+    spritesLoaded: false,
+
+    initSprites: function () {
+        this.spriteUp.src = 'bird_up.png';
+        this.spriteDown.src = 'bird_down.png';
+        this.spriteDead.src = 'bird-dead.png';
+
+        let loadedCount = 0;
+        const checkLoad = () => {
+            loadedCount++;
+            if (loadedCount === 3) this.spritesLoaded = true;
+        };
+
+        this.spriteUp.onload = checkLoad;
+        this.spriteDown.onload = checkLoad;
+        this.spriteDead.onload = checkLoad;
+    },
+
     draw: function () {
         ctx.save();
         ctx.translate(this.x, this.y);
         ctx.rotate(this.rotation);
 
-        ctx.fillStyle = CONFIG.COLOR_BIRD;
-        ctx.beginPath();
-        ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = '#000';
-        ctx.stroke(); // Outline
+        if (this.spritesLoaded) {
+            const drawWidth = this.radius * 2.8; // Slightly larger to account for sprite white space/wings
+            const drawHeight = this.radius * 2.8;
 
-        // Eye
-        ctx.fillStyle = '#fff';
-        ctx.beginPath();
-        ctx.arc(6, -6, 4, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
+            if (state.current === 'GAMEOVER') {
+                // Draw dead bird
+                ctx.drawImage(this.spriteDead, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+            } else {
+                // Animation logic
+                const animationTick = Math.floor(Date.now() / 150); // Change every 150ms ~= 9-10 frames at 60fps
+                const currentSprite = (animationTick % 2 === 0) ? this.spriteUp : this.spriteDown;
+                ctx.drawImage(currentSprite, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+            }
 
-        // Pupil
-        ctx.fillStyle = '#000';
-        ctx.beginPath();
-        ctx.arc(7, -6, 2, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Beak
-        ctx.fillStyle = '#f78e2d';
-        ctx.beginPath();
-        ctx.moveTo(6, 4);
-        ctx.lineTo(14, 8);
-        ctx.lineTo(6, 12);
-        ctx.fill();
-        ctx.stroke();
+        } else {
+            // Fallback to simple circle if not loaded yet
+            ctx.fillStyle = CONFIG.COLOR_BIRD;
+            ctx.beginPath();
+            ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+            ctx.fill();
+        }
 
         ctx.restore();
     },
@@ -177,15 +193,8 @@ const bird = {
         this.velocity += CONFIG.GRAVITY;
         this.y += this.velocity;
 
-        // Rotation based on velocity
-        if (this.velocity < 2.5) { // Going up or just starting to fall
-            this.rotation = -25 * Math.PI / 180;
-        } else { // Falling fast
-            this.rotation += 4 * Math.PI / 180; // Rotate down faster
-            if (this.rotation > 90 * Math.PI / 180) {
-                this.rotation = 90 * Math.PI / 180;
-            }
-        }
+        // Rotation removed to prevent nose diving
+        this.rotation = 0;
 
         // Floor collision
         if (this.y + this.radius >= state.height - CONFIG.GROUND_HEIGHT) {
@@ -269,8 +278,8 @@ const pipes = {
     },
 
     draw: function () {
-        ctx.fillStyle = CONFIG.COLOR_PIPE;
-        ctx.strokeStyle = '#000';
+        // Styles are set within loop for gradients
+        ctx.strokeStyle = '#2d5c0e'; // Darker border
         ctx.lineWidth = 2;
 
         for (let i = 0; i < this.position.length; i++) {
@@ -280,17 +289,38 @@ const pipes = {
             let bottomPipeY = p.y + CONFIG.PIPE_GAP;
             let bottomPipeHeight = state.height - CONFIG.GROUND_HEIGHT - bottomPipeY;
 
+            // Gradient for 3D effect (Horizontal across the pipe width)
+            // Left (dark) -> Light (highlight) -> Right (dark)
+            let gradient = ctx.createLinearGradient(p.x, 0, p.x + CONFIG.PIPE_WIDTH, 0);
+            gradient.addColorStop(0, '#508c26');     // Darker edge
+            gradient.addColorStop(0.1, '#73bf2e');   // Main color
+            gradient.addColorStop(0.4, '#b6e872');   // Highlight
+            gradient.addColorStop(0.8, '#73bf2e');   // Main color
+            gradient.addColorStop(1, '#508c26');     // Darker edge
+
+            ctx.fillStyle = gradient;
+
             // Top Pipe
             ctx.fillRect(p.x, 0, CONFIG.PIPE_WIDTH, topPipeHeight);
-            ctx.strokeRect(p.x, -2, CONFIG.PIPE_WIDTH, topPipeHeight + 2); // -2 to hide top border
+            ctx.strokeRect(p.x, -2, CONFIG.PIPE_WIDTH, topPipeHeight + 2);
 
             // Bottom Pipe
             ctx.fillRect(p.x, bottomPipeY, CONFIG.PIPE_WIDTH, bottomPipeHeight);
             ctx.strokeRect(p.x, bottomPipeY, CONFIG.PIPE_WIDTH, bottomPipeHeight);
 
-            // Cap details (optional for polish)
-            const capHeight = 20;
-            const capOverhang = 2;
+            // Pipe Caps
+            const capHeight = 24; // Slightly taller for better look
+            const capOverhang = 3;
+
+            // Cap Gradient
+            let capGradient = ctx.createLinearGradient(p.x - capOverhang, 0, p.x + CONFIG.PIPE_WIDTH + capOverhang, 0);
+            capGradient.addColorStop(0, '#508c26');
+            capGradient.addColorStop(0.1, '#73bf2e');
+            capGradient.addColorStop(0.4, '#b6e872');
+            capGradient.addColorStop(0.8, '#73bf2e');
+            capGradient.addColorStop(1, '#508c26');
+
+            ctx.fillStyle = capGradient;
 
             // Top pipe cap
             ctx.fillRect(p.x - capOverhang, topPipeHeight - capHeight, CONFIG.PIPE_WIDTH + capOverhang * 2, capHeight);
@@ -299,6 +329,11 @@ const pipes = {
             // Bottom pipe cap
             ctx.fillRect(p.x - capOverhang, bottomPipeY, CONFIG.PIPE_WIDTH + capOverhang * 2, capHeight);
             ctx.strokeRect(p.x - capOverhang, bottomPipeY, CONFIG.PIPE_WIDTH + capOverhang * 2, capHeight);
+
+            // Highlight shine lines (optional, but adds gloss)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.fillRect(p.x + 8, 0, 4, topPipeHeight - capHeight);
+            ctx.fillRect(p.x + 8, bottomPipeY + capHeight, 4, bottomPipeHeight - capHeight);
         }
     }
 };
@@ -353,8 +388,8 @@ function update() {
         document.body.style.backgroundPosition = `-${state.frames * 0.5}px 0`;
 
     } else if (state.current === 'START') {
-        // Hover effect for bird in start screen
-        bird.y = state.height / 2 - 20 + Math.sin(Date.now() / 300) * 5;
+        // Hover effect for bird in start screen - Positioned at top 1/3 to clear title
+        bird.y = state.height / 3 + Math.sin(Date.now() / 300) * 5;
         ground.update(); // Keep ground moving in start screen for "alive" feel
 
         // Parallax
@@ -445,7 +480,7 @@ function resize() {
 
     // If resizing mid-game, might want to adjust bird y to keep relative?, but for now just let it be
     if (state.current === 'START') {
-        bird.y = state.height / 2;
+        bird.y = state.height / 3; // Clear UI
     }
 }
 
@@ -474,6 +509,7 @@ function init() {
     });
 
     bird.x = state.width / 2 - 50; // Offset start x
+    bird.initSprites();
     bird.reset();
 
     loop();
