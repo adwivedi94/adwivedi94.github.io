@@ -1,0 +1,116 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#game-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    max-width: 480px; /* Mobile-first constraint on desktop */
+    max-height: 800px;
+    background: #000;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+#ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Let clicks pass through to canvas handler if needed, but we handle input globally */
+}
+
+#score {
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 3rem;
+    font-weight: bold;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    z-index: 10;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-align: center;
+    z-index: 20;
+}
+
+.overlay h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 0px #000;
+    color: #fca048;
+}
+
+.overlay p {
+    font-size: 1.2rem;
+    color: #fff;
+    text-shadow: 1px 1px 0px #000;
+}
+
+.score-card {
+    background: #ded895;
+    border: 2px solid #553000;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    color: #e86101;
+    min-width: 200px;
+    box-shadow: 5px 5px 0px rgba(0,0,0,0.2);
+}
+
+.score-card p {
+    margin: 5px 0;
+    font-size: 1.5rem;
+    color: #e86101; /* Overriding white */
+    text-shadow: none;
+    font-weight: bold;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.restart-msg {
+    margin-top: 1rem;
+    animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
