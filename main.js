@@ -7,7 +7,7 @@ let CONFIG = {
     PIPE_SPAWN_INTERVAL: 100, // Frames
     PIPE_GAP: 150, // Vertical gap between pipes
     PIPE_WIDTH: 50,
-    GROUND_HEIGHT: 16,
+    GROUND_HEIGHT: 48,
     BIRD_RADIUS: 12,
     COLOR_BG: '#70c5ce', // Classic blue sky
     COLOR_GROUND: '#ded895',
