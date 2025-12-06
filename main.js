@@ -395,7 +395,6 @@ function update() {
         // Parallax
         document.body.style.backgroundPosition = `-${Date.now() / 50}px 0`;
     }
-    // In GAMEOVER, nothing updates
 }
 
 function draw() {
