@@ -15,6 +15,64 @@ const CONFIG = {
     COLOR_PIPE: '#73bf2e'
 };
 
+// Audio System (Web Audio API)
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+const SoundManager = {
+    playFlap: function () {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+        osc.frequency.linearRampToValueAtTime(500, audioCtx.currentTime + 0.1);
+
+        gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
+    },
+
+    playScore: function () {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1000, audioCtx.currentTime);
+
+        gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.15);
+    },
+
+    playHit: function () {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+        osc.frequency.linearRampToValueAtTime(50, audioCtx.currentTime + 0.1);
+
+        gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.2);
+    }
+};
+
 // DOM Elements
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -84,6 +142,7 @@ const bird = {
 
     flap: function () {
         this.velocity = CONFIG.FLAP_STRENGTH;
+        SoundManager.playFlap();
     },
 
     update: function () {
@@ -92,10 +151,10 @@ const bird = {
         this.y += this.velocity;
 
         // Rotation based on velocity
-        if (this.velocity < 0) {
+        if (this.velocity < 2.5) { // Going up or just starting to fall
             this.rotation = -25 * Math.PI / 180;
-        } else {
-            this.rotation += 2 * Math.PI / 180;
+        } else { // Falling fast
+            this.rotation += 4 * Math.PI / 180; // Rotate down faster
             if (this.rotation > 90 * Math.PI / 180) {
                 this.rotation = 90 * Math.PI / 180;
             }
@@ -165,7 +224,13 @@ const pipes = {
                 state.score += 1;
                 p.passed = true;
                 scoreEl.innerText = state.score;
-                // Ideally play sound here
+
+                // Visual pop
+                scoreEl.classList.remove('score-pop');
+                void scoreEl.offsetWidth; // Trigger reflow
+                scoreEl.classList.add('score-pop');
+
+                SoundManager.playScore();
             }
 
             // Remove off-screen pipes
@@ -256,18 +321,24 @@ function update() {
         pipes.update();
         ground.update();
         state.frames++;
+
+        // Parallax background (simple shift)
+        document.body.style.backgroundPosition = `-${state.frames * 0.5}px 0`;
+
     } else if (state.current === 'START') {
         // Hover effect for bird in start screen
         bird.y = state.height / 2 - 20 + Math.sin(Date.now() / 300) * 5;
         ground.update(); // Keep ground moving in start screen for "alive" feel
+
+        // Parallax
+        document.body.style.backgroundPosition = `-${Date.now() / 50}px 0`;
     }
     // In GAMEOVER, nothing updates
 }
 
 function draw() {
-    // Background
-    ctx.fillStyle = CONFIG.COLOR_BG;
-    ctx.fillRect(0, 0, state.width, state.height);
+    // Clear canvas - transparent so CSS background shows through
+    ctx.clearRect(0, 0, state.width, state.height);
 
     // Entities
     pipes.draw();
@@ -300,7 +371,10 @@ function handleInput(e) {
 }
 
 function gameOver() {
+    if (state.current === 'GAMEOVER') return; // Prevent double trigger
+
     state.current = 'GAMEOVER';
+    SoundManager.playHit();
 
     // Update high score
     if (state.score > state.bestScore) {
@@ -312,6 +386,12 @@ function gameOver() {
     bestScoreEl.innerText = state.bestScore;
     gameOverScreen.classList.remove('hidden');
     scoreEl.classList.add('hidden'); // Hide playing score
+
+    // Bird "falls" to ground if hit pipe
+    if (bird.y < state.height - CONFIG.GROUND_HEIGHT - bird.radius) {
+        // Optional: animate fall in future
+        // bird.velocity = 0; // stop or let it fall? For now, simple game over state
+    }
 }
 
 function resetGame() {

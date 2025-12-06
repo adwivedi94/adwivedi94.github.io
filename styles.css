@@ -8,7 +8,14 @@
 }
 
 body {
-    background-color: #333;
+    background: linear-gradient(to bottom, #70c5ce 0%, #70c5ce 70%, #ded895 100%);
+    /* Simple cloud pattern for parallax suggestion */
+    background-image:
+        linear-gradient(to bottom, #70c5ce 80%, transparent 100%),
+        radial-gradient(circle at 50% 50%, white 10%, transparent 10%),
+        radial-gradient(circle at 20% 30%, white 5%, transparent 5%);
+    background-size: 100% 100%, 100px 100px, 200px 200px;
+
     display: flex;
     justify-content: center;
     align-items: center;
@@ -20,10 +27,11 @@ body {
     position: relative;
     width: 100%;
     height: 100%;
-    max-width: 480px; /* Mobile-first constraint on desktop */
+    max-width: 480px;
+    /* Mobile-first constraint on desktop */
     max-height: 800px;
     background: #000;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
 canvas {
@@ -38,7 +46,8 @@ canvas {
     left: 0;
     width: 100%;
     height: 100%;
-    pointer-events: none; /* Let clicks pass through to canvas handler if needed, but we handle input globally */
+    pointer-events: none;
+    /* Let clicks pass through to canvas handler if needed, but we handle input globally */
 }
 
 #score {
@@ -49,8 +58,27 @@ canvas {
     font-size: 3rem;
     font-weight: bold;
     color: white;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
     z-index: 10;
+    transition: transform 0.1s;
+}
+
+.score-pop {
+    animation: pop 0.2s ease-out;
+}
+
+@keyframes pop {
+    0% {
+        transform: translateX(-50%) scale(1);
+    }
+
+    50% {
+        transform: translateX(-50%) scale(1.5);
+    }
+
+    100% {
+        transform: translateX(-50%) scale(1);
+    }
 }
 
 .overlay {
@@ -90,13 +118,14 @@ canvas {
     margin: 20px 0;
     color: #e86101;
     min-width: 200px;
-    box-shadow: 5px 5px 0px rgba(0,0,0,0.2);
+    box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.2);
 }
 
 .score-card p {
     margin: 5px 0;
     font-size: 1.5rem;
-    color: #e86101; /* Overriding white */
+    color: #e86101;
+    /* Overriding white */
     text-shadow: none;
     font-weight: bold;
 }
@@ -111,6 +140,13 @@ canvas {
 }
 
 @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
 }
