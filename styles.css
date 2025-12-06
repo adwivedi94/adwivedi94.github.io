@@ -30,7 +30,7 @@ body {
     max-width: 480px;
     /* Mobile-first constraint on desktop */
     max-height: 800px;
-    background: #000;
+    background: transparent;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
@@ -149,4 +149,38 @@ canvas {
     50% {
         opacity: 0.5;
     }
+}
+
+/* Difficulty Selection */
+#difficulty-select {
+    margin-top: 20px;
+}
+
+.diff-btn {
+    background: #e9af07;
+    border: 2px solid #553000;
+    color: #fff;
+    font-family: inherit;
+    /* Inherit font from parent */
+    font-size: 14px;
+    padding: 8px 16px;
+    margin: 0 5px;
+    cursor: pointer;
+    text-transform: uppercase;
+    box-shadow: 0 4px #a06e04;
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.diff-btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 0 #a06e04;
+}
+
+.diff-btn.active {
+    background: #ff5e00;
+    box-shadow: 0 4px #b33900;
+}
+
+.diff-btn.active:active {
+    box-shadow: 0 0 #b33900;
 }

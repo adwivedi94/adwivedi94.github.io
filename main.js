@@ -1,5 +1,6 @@
 // Game Configuration
-const CONFIG = {
+// Game Configuration
+let CONFIG = {
     GRAVITY: 0.25,
     FLAP_STRENGTH: -4.5, // Jump impulse
     PIPE_SPEED: 2,
@@ -14,6 +15,32 @@ const CONFIG = {
     COLOR_BIRD: '#f4e040',
     COLOR_PIPE: '#73bf2e'
 };
+
+function setDifficulty(level) {
+    const buttons = document.querySelectorAll('.diff-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`.diff-btn[data-level="${level}"]`).classList.add('active');
+
+    switch (level) {
+        case 'easy':
+            CONFIG.PIPE_SPEED = 1.5;
+            CONFIG.PIPE_GAP = 170;
+            CONFIG.PIPE_SPAWN_INTERVAL = 120;
+            break;
+        case 'normal':
+            CONFIG.PIPE_SPEED = 2;
+            CONFIG.PIPE_GAP = 150;
+            CONFIG.PIPE_SPAWN_INTERVAL = 100;
+            break;
+        case 'hard':
+            CONFIG.PIPE_SPEED = 2.5;
+            CONFIG.PIPE_GAP = 130;
+            CONFIG.PIPE_SPAWN_INTERVAL = 90;
+            break;
+    }
+
+    // Reset any running game physics to new config if needed, though usually applies on new game
+}
 
 // Audio System (Web Audio API)
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -433,6 +460,18 @@ function init() {
         // e.preventDefault(); // Prevent default touch actions if needed, but verify first
         handleInput(e);
     }, { passive: false });
+
+    // Difficulty Buttons
+    document.querySelectorAll('.diff-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent game start trigger
+            setDifficulty(e.target.dataset.level);
+        });
+        // Also handle touch to prevent phantom clicks or propogation issues
+        btn.addEventListener('touchstart', (e) => {
+            e.stopPropagation();
+        }, { passive: true });
+    });
 
     bird.x = state.width / 2 - 50; // Offset start x
     bird.reset();

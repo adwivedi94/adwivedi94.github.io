@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Flappy Bird Clone</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <div id="game-container">
         <canvas id="gameCanvas"></canvas>
@@ -13,7 +15,11 @@
             <div id="score">0</div>
             <div id="start-screen" class="overlay">
                 <h1>Flappy Bird</h1>
-                <p>Press SPACE or TAP to Start</p>
+                <div id="difficulty-select">
+                    <button class="diff-btn" data-level="easy">Easy</button>
+                    <button class="diff-btn active" data-level="normal">Normal</button>
+                    <button class="diff-btn" data-level="hard">Hard</button>
+                </div>
             </div>
             <div id="game-over-screen" class="overlay hidden">
                 <h1>Game Over</h1>
@@ -27,4 +33,5 @@
     </div>
     <script src="main.js"></script>
 </body>
+
 </html>
